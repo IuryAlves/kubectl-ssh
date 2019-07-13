@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/bin/bash -e
 
 usage(){
-    echo "kubectl ssh <pod_name> [-n|--namespace] [ssh-parameters]"
+    echo "kubectl ssh <pod_name> [-n | --namespace] [-u | --user] [<ssh-parameters>]"
 }
 
 
 get_node_ip(){
+
     pod_name=$1
     namespace=$2
 
@@ -16,6 +17,8 @@ get_node_ip(){
             grep "hostIP:" | \
                 cut -f2 -d: | \
                  tr -d "[:blank:]"
+
+    exit "${PIPESTATUS[0]}"
 }
 
 
@@ -63,7 +66,6 @@ do
 done
 
 destination="$(get_node_ip $pod_name $namespace)"
-
 if test -n "$user"
 then
     destination="${user}@${destination}"

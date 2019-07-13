@@ -6,7 +6,6 @@ usage(){
 
 
 get_node_ip(){
-
     pod_name=$1
     namespace=$2
 

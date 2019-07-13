@@ -1,0 +1,72 @@
+#!/bin/bash
+
+usage(){
+    echo "$0 <pod_name> [-n|--namespace] [ssh-parameters]"
+}
+
+
+get_node_ip(){
+    pod_name=$1
+    namespace=$2
+
+    kubectl get pods \
+        $pod_name \
+        -n $namespace \
+        -o yaml | \
+            grep "hostIP:" | \
+                cut -f2 -d: | \
+                 tr -d "[:blank:]"
+}
+
+
+if [ $# -lt 1 ]
+then
+    usage
+    exit 1
+fi
+
+ssh_args=""
+pod_name="$1"
+shift
+
+
+while test $# -gt 0
+do
+    case $1 in
+        -u|--user)
+            user=$2
+            shift
+            shift
+            ;;
+        -u=*|--user=*)
+            user="${1#*=}"
+            shift
+            ;;
+        -n|--namespace)
+            namespace=$2
+            shift
+            shift
+            ;;
+        -n=*|--namespace=*)
+            namespace="${1#*=}"
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            ssh_args+="$1 "
+            shift
+            ;;
+    esac
+done
+
+destination="$(get_node_ip $pod_name $namespace)"
+
+if test -n "$user"
+then
+    destination="${user}@${destination}"
+fi
+
+ssh  $destination $ssh_args

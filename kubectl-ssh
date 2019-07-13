@@ -11,7 +11,7 @@ get_node_ip(){
 
     kubectl get pods \
         $pod_name \
-        -n $namespace \
+        $(test -n "$namespace" && echo "-n $namespace" || true) \
         -o yaml | \
             grep "hostIP:" | \
                 cut -f2 -d: | \
